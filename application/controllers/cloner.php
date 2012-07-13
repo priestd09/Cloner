@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Rolf Meyer  <rosmeyer@gmail.com>
+ */
 class Cloner extends CI_Controller
 {
 
@@ -7,7 +10,7 @@ class Cloner extends CI_Controller
 
     /**
      * the target dir for all downloads
-     * @var strin g
+     * @var string 
      */
     private $local_directory = 'backup';
 
@@ -40,10 +43,23 @@ class Cloner extends CI_Controller
         $this->load->helper('file');
         $this->load->database();
 
+
+        $this->output_message(PHP_EOL . '******************CLONER STARTED******************');
+
         $this->projects = $this->db->get_where('projects', array('skip' => 0))->result();
 
         // create local dir
         @mkdir($this->local_directory);
+    }
+
+
+
+
+
+    public function __destruct()
+    {
+
+        $this->output_message(PHP_EOL . '******************CLONER ENDED******************');
     }
 
 
@@ -55,10 +71,8 @@ class Cloner extends CI_Controller
      * runs for a long time
      * @param bool $create_zip create zip after completed download?
      */
-    public function clone_all($create_zip = true)
+    public function clone_all($create_zip = false)
     {
-        $this->output_message(@date('Y-m-d H:i:s') . ' clone all started');
-
 
         foreach ($this->projects as $p)
         {
@@ -66,33 +80,69 @@ class Cloner extends CI_Controller
             // skip cloning if last clone is still "hot"
             if ($this->cloning_is_due($p->interval, $p->last_clone) === false)
             {
+                $this->output_message(@date('Y-m-d H:i:s') . ' skipping ' . $p->ftp_host . ' / ' . $p->ftp_dir);
                 continue;
             }
 
-            if (is_dir($this->local_directory . '/' . $p->ftp_dir))
+
+            $this->delete_old_backups($p->projectsid);
+
+
+            //create local dir
+            $local_dir = $this->local_directory . '/' . $p->destination . '/' . @date('Y-m-d (H.i.s)');
+
+            if (is_dir($local_dir))
             {
-                delete_files($this->local_directory . '/' . $p->ftp_dir, true);
+                delete_files($local_dir, true);
             }
 
-            $this->output_message(@date('Y-m-d H:i:s') . ' cloning ' . $p->ftp_host . ':' . $p->ftp_dir);
+
+            $this->output_message(PHP_EOL . @date('Y-m-d H:i:s') . ' cloning ' . $p->ftp_dir . ' from host ' . $p->ftp_host . ' to ' . $local_dir);
+
 
             // start download 
-            $this->download_project($p->ftp_dir, $p->ftp_host, $p->ftp_user, $p->ftp_password);
+            $this->download_project($p->ftp_dir, $p->ftp_host, $p->ftp_user, $p->ftp_password, $local_dir);
+
 
             // update the db-entry
             $this->db->where('projectsid', $p->projectsid)->update('projects', array('last_clone' => @date('Y-m-d')));
+            //insert entry in "backups"
+            $this->db->insert('backups', array('folder' => $local_dir, 'projectsid' => $p->projectsid, 'timestamp' => time()));
 
-            $this->output_message(@date('Y-m-d H:i:s') . ' done cloning  ' . $p->ftp_host . ':' . $p->ftp_dir);
 
-            // if wanted, create zip
+            $this->output_message(@date('Y-m-d H:i:s') . ' done cloning  ' . $p->ftp_dir);
+
+            // if wanted, create zip... needs lots of ram
             if ($create_zip === true)
             {
                 $this->create_zip($p->ftp_dir);
             }
         }
+    }
 
 
-        $this->output_message(@date('Y-m-d H:i:s') . ' clone all ended ');
+
+
+
+    /**
+     * deletes old backups
+     * @param type $projectsid
+     */
+    private function delete_old_backups($projectsid)
+    {
+        $backups_delete = $this->db->order_by('timestamp', 'desc')->limit(100, 8)->get_where('backups', array('projectsid' => $projectsid))->result();
+        if (count($backups_delete) > 0)
+        {
+
+            foreach ($backups_delete as $b)
+            {
+                if (delete_files($b->folder, true))
+                {
+                    rmdir($b->folder);
+                    $this->db->delete('backups', array('backupsid' => $b->backupsid));
+                }
+            }
+        }
     }
 
 
@@ -112,12 +162,10 @@ class Cloner extends CI_Controller
         $seconds_interval = 86400 * $interval;
         if ($now - $last > $seconds_interval)
         {
-            $this->output_message('Bitte Backup machen');
             return true;
         }
         else
         {
-            $this->output_message('Bitte kein Backup machen');
             return false;
         }
 
@@ -135,12 +183,12 @@ class Cloner extends CI_Controller
      */
     private function create_zip($path)
     {
-        $this->output_message(@date('Y-m-d H:i:s') . ' create_zip started: ' . $path);
+        $this->output_message(@date('Y-m-d H:i:s') . ' CREATE_ZIP started: ' . $path);
 
         $this->zip->read_dir($this->local_directory . '/' . $path . '/');
         $this->zip->archive($this->local_directory . '/' . $path . '_' . @date('Ymd_H_i_s') . '.zip');
 
-        $this->output_message(@date('Y-m-d H:i:s') . ' done create_zip: ' . $path);
+        $this->output_message(@date('Y-m-d H:i:s') . ' CREATE_ZIP ended: ' . $path);
     }
 
 
@@ -155,10 +203,10 @@ class Cloner extends CI_Controller
      * @param type $ftp_password
      * @todo Description optionally get sql-dump from db
      */
-    private function download_project($remote_dir = false, $ftp_host = false, $ftp_user = false, $ftp_password = false)
+    private function download_project($remote_dir = false, $ftp_host = false, $ftp_user = false, $ftp_password = false, $local_dir = false)
     {
         //create local directory
-        @mkdir($this->local_directory . '/' . $remote_dir, 0777, true);
+        @mkdir($local_dir, 0777, true);
 
         //connect to ftp-server
         $config['hostname'] = $ftp_host;
@@ -167,7 +215,7 @@ class Cloner extends CI_Controller
         $this->ftp->connect($config);
 
         // download files 
-        $this->ftp->mirror_download('/' . $remote_dir . '/', getcwd() . '/' . $this->local_directory . '/' . $remote_dir . '/');
+        $this->ftp->mirror_download('/' . $remote_dir . '/', getcwd() . '/' . $local_dir . '/');
 
         $this->ftp->close();
     }
