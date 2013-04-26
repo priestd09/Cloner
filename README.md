@@ -44,4 +44,7 @@ CREATE TABLE projects
  4. ``ftp_dir`` if the directory is a sub-directory
  5. ``intervall`` number of days... clone this project every n days
  6. ``destination`` name of the destination folder
-3. the default download-dir is **backup** 
+3. the default download-dir is **backup**, you can change it in ``/application/controllers/cloner.php``
+
+###Warning
+There is very little output on th command-lin, no error-handling and no messaging. Use at you own risk.
