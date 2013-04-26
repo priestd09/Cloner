@@ -14,9 +14,7 @@ CREATE TABLE backups
     timestamp INTEGER,
     projectsid INTEGER
 );
-``
 
-```sql
 CREATE TABLE projects
 (
     projectsid INTEGER PRIMARY KEY,
