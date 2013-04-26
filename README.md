@@ -1,2 +1,2 @@
 Invoke like this:
-/usr/bin/php /Users/rolfmeyer/www/Cloner/index.php Cloner clone_all
+/usr/bin/php PATH/TO/SCRIPT/Cloner/index.php Cloner clone_all
