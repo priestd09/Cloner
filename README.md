@@ -1,5 +1,4 @@
 #Cloner
-
 Cloner is a tool to backup ftp-directories to your local machine. It´s written in PHP using the CodeIgniter framework.
 Cloner is a command-line-script and you can run it as a cronjob.
 
