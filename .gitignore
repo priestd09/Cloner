@@ -1,1 +1,2 @@
-/backup/*
+/application/database/cloner.sqlite
+/backup/
