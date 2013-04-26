@@ -1,6 +1,8 @@
-Invoke like this:
+Call script like this:
 /usr/bin/php PATH/TO/SCRIPT/Cloner/index.php Cloner clone_all
 
+
+You need the following tables in `/application/database/cloner.sqlite`
 ```sql
 CREATE TABLE backups
 (
@@ -11,6 +13,7 @@ CREATE TABLE backups
 );
 ```
 
+```sql
 CREATE TABLE projects
 (
     projectsid INTEGER PRIMARY KEY,
@@ -26,4 +29,4 @@ CREATE TABLE projects
     last_clone TEXT,
     destination TEXT
 );
-
+```
