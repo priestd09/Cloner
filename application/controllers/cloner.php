@@ -11,6 +11,7 @@ class Cloner extends CI_Controller
      * the target dir for all downloads
      * @var string
      */
+//    private $local_directory = '/Users/rolfmeyer/Desktop/FTP-Backup';
     private $local_directory = 'backup';
 
 
@@ -218,8 +219,19 @@ class Cloner extends CI_Controller
         $config['password'] = $ftp_password;
         $this->ftp->connect($config);
 
+        if ($remote_dir === false)
+        {
+            $remote_dir = '';
+        }
+        else
+        {
+            $remote_dir = $remote_dir . '/';
+        }
+
         // download files 
-        $this->ftp->mirror_download('/' . $remote_dir . '/', getcwd() . '/' . $local_dir . '/');
+        $this->ftp->mirror_download('/' . $remote_dir, getcwd() . '/' . $local_dir . '/');
+        //ouptut info to terminal
+
 
         $this->ftp->close();
     }
