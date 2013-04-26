@@ -7,21 +7,18 @@ class Cloner extends CI_Controller
 {
 
 
-
     /**
      * the target dir for all downloads
-     * @var string 
+     * @var string
      */
     private $local_directory = 'backup';
 
 
-
     /**
      * the db-result objects with all listed projects
-     * @var array of objects 
+     * @var array of objects
      */
     private $projects;
-
 
 
     /**
@@ -69,6 +66,7 @@ class Cloner extends CI_Controller
     /**
      * loops through all projects, starts ftp-download
      * runs for a long time
+     *
      * @param bool $create_zip create zip after completed download?
      */
     public function clone_all($create_zip = false)
@@ -126,6 +124,7 @@ class Cloner extends CI_Controller
 
     /**
      * deletes old backups
+     *
      * @param type $projectsid
      */
     private function delete_old_backups($projectsid)
@@ -151,9 +150,11 @@ class Cloner extends CI_Controller
 
     /**
      * checks if cloning is due based on last clone and cloning interval
-     * @param int $interval
-     * @param date $last_clone
-     * @return boolean 
+     *
+     * @param $interval
+     * @param $last_clone
+     *
+     * @return boolean
      */
     private function cloning_is_due($interval = false, $last_clone = false)
     {
@@ -179,7 +180,8 @@ class Cloner extends CI_Controller
 
     /**
      * creates a zip of the recently downloaded dir
-     * @param string $path 
+     *
+     * @param string $path
      */
     private function create_zip($path)
     {
@@ -196,15 +198,17 @@ class Cloner extends CI_Controller
 
 
     /**
-     * 
-     * @param type $remote_dir
-     * @param type $ftp_host
-     * @param type $ftp_user
-     * @param type $ftp_password
-     * @todo Description optionally get sql-dump from db
+     *
+     * @param $remote_dir
+     * @param $ftp_host
+     * @param $ftp_user
+     * @param $ftp_password
+     * @param $local_dir
      */
     private function download_project($remote_dir = false, $ftp_host = false, $ftp_user = false, $ftp_password = false, $local_dir = false)
     {
+        //Todo Description optionally get sql-dump from db
+
         //create local directory
         @mkdir($local_dir, 0777, true);
 
@@ -226,8 +230,9 @@ class Cloner extends CI_Controller
 
     /**
      * collect all messages, optionally output message to shell
+     *
      * @param string $msg the message
-     * @param bool $echo echo output to console?
+     * @param bool $echo  echo output to console?
      */
     private function output_message($msg, $echo = true)
     {
