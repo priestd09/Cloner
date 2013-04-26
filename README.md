@@ -1,8 +1,12 @@
-Call script like this:
-/usr/bin/php PATH/TO/SCRIPT/Cloner/index.php Cloner clone_all
+#Cloner
 
+Cloner is a tool to backup ftp-directories to your local machine. It´s written in PHP using the CodeIgniter framework.
+Cloner is a command-line-script and you can run it as a cronjob.
 
-You need the following tables in `/application/database/cloner.sqlite`
+Call Cloner like this: ``usr/bin/php PATH/TO/SCRIPT/Cloner/index.php Cloner clone_all``
+
+You need the following tables in ``application/database/cloner.sqlite``
+
 ```sql
 CREATE TABLE backups
 (
@@ -11,7 +15,7 @@ CREATE TABLE backups
     timestamp INTEGER,
     projectsid INTEGER
 );
-```
+``
 
 ```sql
 CREATE TABLE projects
@@ -30,3 +34,14 @@ CREATE TABLE projects
     destination TEXT
 );
 ```
+
+##Usage
+1. Download a copy of the repository to local destination directory
+2. Enter projects into the table ``projects`` You need to provide those fields:
+ 1. ``ftp_host`` url of the ftp-server
+ 2. ``ftp_user`` user of the ftp-account
+ 3. ``ftp_password`` the password of the account
+ 4. ``ftp_dir`` if the directory is a sub-directory
+ 5. ``intervall`` number of days... clone this project every n days
+ 6. ``destination`` name of the destination folder
+3. the default download-dir is **backup** 
