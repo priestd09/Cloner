@@ -44,4 +44,4 @@ CREATE TABLE projects
 3. the default download-dir is **backup**, you can change it in ``/application/controllers/cloner.php``
 
 ###Warning
-There is very little output on th command-lin, no error-handling and no messaging. Use at you own risk.
+There is very little output on th command-line, no error-handling and no messaging. Use at you own risk. Don´t use it as your one and only backup system.
