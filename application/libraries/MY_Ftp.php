@@ -144,6 +144,7 @@ class MY_Ftp extends CI_Ftp
 
                     $this->download($rempath . $file, $locpath . $file, $mode);
                 }
+                fputs(STDOUT, ".");
             }
             return TRUE;
         }
