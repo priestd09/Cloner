@@ -46,4 +46,4 @@ CREATE TABLE projects
 ###Warning
 There is very little output on th command-line, no error-handling and no messaging. Use at you own risk. Don´t use it as your one and only backup system.
 
-Don't try this at home!
+Don't try this at home! - Really
