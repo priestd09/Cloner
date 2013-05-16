@@ -43,10 +43,13 @@ CREATE TABLE projects
  6. ``destination`` name of the destination folder
 
 Settings (``/application/controllers/cloner.php``):
+
 download-dir: Default is **backup**
+
 backups_to_keep: Default is 7 
 
 logtoconsole: Default is 'true'
+
 some email-settings
 
 
