@@ -32,19 +32,19 @@ class Cloner extends CI_Controller
      *  Config for email-reporting
      * @var arry
      */
-    private $send_email_report = TRUE; //bool  //Sends report via mail
+    private $send_email_report = FALSE; //bool  //Sends report via mail
     // For more mailsettigs see: http://ellislab.com/codeigniter/user-guide/libraries/email.html
     private $mailConfig = array (
         'protocol' => 'stmp',
         'charset' =>'utf8',
-        'smtp_host' => '192.168.0.9',
-        'smtp_user' => 'kkrieger',
-        'smtp_pass' => '1kevin2',
+        'smtp_host' => 'hostname',
+        'smtp_user' => 'username',
+        'smtp_pass' => 'swordfish',
         'smtp_port' => 25
     );
-    private $mail_from_email = 'k.krieger@formotion.de';
+    private $mail_from_email = 'your@domain.de';
     private $mail_from_name = 'Cloner email report';
-    private $mail_to_email = 'k.krieger@formotion.de';
+    private $mail_to_email = 'your@domain.de';
     private $mail_subject; //if not set: 'Cloner email report from date()';
     private $mailMessage;
 
@@ -126,21 +126,21 @@ class Cloner extends CI_Controller
                 
                 $this->log(PHP_EOL .@date('Y-m-d H:i:s') . ' done cloning  ' . $p->ftp_dir);
                 
+                $this->delete_old_backups($p->projectsid); //keep last seven backups //only starts after successfull backup
+                
             } else
             {
                 $this->log("Something went wrong. Please check out");
-                $this->log(PHP_EOL . '****************** Next ******************');
             }
-
-
+                $this->log(PHP_EOL . '****************** Next ******************');
             // if wanted, create zip... needs lots of ram
             if ($create_zip === true)
             {
                 $this->create_zip($p->ftp_dir);
-            }
-        }
+            }   
+         }
                 
-                $this->delete_old_backups($p->projectsid); //keep last seven backups
+                
 
                 $this->log(PHP_EOL . '******************CLONER ENDED******************');
                 $this->email_report();
@@ -306,14 +306,11 @@ class Cloner extends CI_Controller
      * Reports results via email
      * @param ?
      */
-    private function email_report($param = '') {        
+    private function email_report( ) {        
 
 //        Prepare for Loveshock (Mail)
         $this->email->initialize($this->mailConfig);
 
-//        $this->email->from('noreply@clone.tld', 'your name');
-//        $this->email->to('your@email.tld');
-   
         $this->email->from($this->mail_from_email, $this->mail_from_name);
         $this->email->to($this->mail_to_email);
         
