@@ -44,6 +44,7 @@ class Cloner extends CI_Controller
 
         $this->output_message(PHP_EOL . '******************CLONER STARTED******************');
 
+        #$this->projects = $this->db->get('projects')->result();
         $this->projects = $this->db->get_where('projects', array('skip' => 0))->result();
 
         // create local dir
@@ -72,7 +73,7 @@ class Cloner extends CI_Controller
      */
     public function clone_all($create_zip = false)
     {
-
+        $this->output_message("Pending: ".count($this->projects));
         foreach ($this->projects as $p)
         {
 
@@ -96,20 +97,25 @@ class Cloner extends CI_Controller
             }
 
 
-            $this->output_message(PHP_EOL . @date('Y-m-d H:i:s') . ' cloning ' . $p->ftp_dir . ' from host ' . $p->ftp_host . ' to ' . $local_dir);
+            $this->output_message(PHP_EOL . @date('Y-m-d H:i:s') . ' cloning ' . $p->ftp_dir . ' from host ' .$p->ftp_user."@".$p->ftp_host . ' to ' . $local_dir);
 
 
             // start download 
-            $this->download_project($p->ftp_dir, $p->ftp_host, $p->ftp_user, $p->ftp_password, $local_dir);
+            if ($this->download_project($p->ftp_dir, $p->ftp_host, $p->ftp_user, $p->ftp_password, $local_dir))
+            {
+                // update the db-entry if backup is done
+                $this->db->where('projectsid', $p->projectsid)->update('projects', array('last_clone' => @date('Y-m-d')));
+                //insert entry in "backups"
+                $this->db->insert('backups', array('folder' => $local_dir, 'projectsid' => $p->projectsid, 'timestamp' => time()));
+                
+                $this->output_message(PHP_EOL .@date('Y-m-d H:i:s') . ' done cloning  ' . $p->ftp_dir);
+                
+            } else
+            {
+                $this->output_message("Something went wrong. Please check out");
+                $this->output_message("Next");
+            }
 
-
-            // update the db-entry
-            $this->db->where('projectsid', $p->projectsid)->update('projects', array('last_clone' => @date('Y-m-d')));
-            //insert entry in "backups"
-            $this->db->insert('backups', array('folder' => $local_dir, 'projectsid' => $p->projectsid, 'timestamp' => time()));
-
-
-            $this->output_message(@date('Y-m-d H:i:s') . ' done cloning  ' . $p->ftp_dir);
 
             // if wanted, create zip... needs lots of ram
             if ($create_zip === true)
@@ -161,7 +167,7 @@ class Cloner extends CI_Controller
     {
         $now = @time();
         $last = @strtotime($last_clone);
-        $seconds_interval = 86400 * $interval;
+        $seconds_interval = 86400 * $interval; // 86400 seconds = 1 day
         if ($now - $last > $seconds_interval)
         {
             return true;
@@ -217,23 +223,30 @@ class Cloner extends CI_Controller
         $config['hostname'] = $ftp_host;
         $config['username'] = $ftp_user;
         $config['password'] = $ftp_password;
-        $this->ftp->connect($config);
-
-        if ($remote_dir === false)
+        if ($this->ftp->connect($config))
         {
-            $remote_dir = '';
-        }
-        else
+            if ($remote_dir === false)
+            {
+                $remote_dir = '';
+            }
+            else
+            {
+                $remote_dir = $remote_dir . '/';
+            }
+
+            // download files 
+            $this->ftp->mirror_download('/' . $remote_dir, getcwd() . '/' . $local_dir . '/');
+            //ouptut info to terminal
+
+
+            $this->ftp->close();
+            return TRUE;
+        } else 
         {
-            $remote_dir = $remote_dir . '/';
+            
+            $this->output_message("Connection could not be established");
+            return FALSE;
         }
-
-        // download files 
-        $this->ftp->mirror_download('/' . $remote_dir, getcwd() . '/' . $local_dir . '/');
-        //ouptut info to terminal
-
-
-        $this->ftp->close();
     }
 
 
