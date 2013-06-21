@@ -54,6 +54,8 @@ some email-settings
 
 
 ###Warning
-There is just little output on th command-line, little error-handling and now messaging. Use at you own risk. Don´t use it as your one and only backup system.
+1. Cloner is more of an exercise than a real world solution ;)
+2. There is just little output on th command-line, little error-handling and no messaging. 
+3. Use at you own risk. Don´t use it as your one and only backup system.
 
-Don't try this at home! - Really.
+##Don't try this at home! - Really.##
